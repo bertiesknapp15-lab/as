@@ -20,7 +20,7 @@ pip install torch torchvision torchaudio \
 
 # Install Python deps
 pip install \
-  transformers==4.35.2 \
+  transformers>=4.40 \
   accelerate==0.24.1 \
   flask \
   pillow \
