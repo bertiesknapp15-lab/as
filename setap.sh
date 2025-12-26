@@ -27,8 +27,8 @@ pip install \
   requests[socks]
 
 # Download files
-wget -O imageSplit.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/refs/heads/main/imageSplit.py
-wget -O run.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/refs/heads/main/run.py
+wget --no-cache --header="Cache-Control: no-cache" --header="Pragma: no-cache" -O imageSplit.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/refs/heads/main/imageSplit.py
+wget --no-cache --header="Cache-Control: no-cache" --header="Pragma: no-cache" -O run.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/refs/heads/main/run.py
 
 # Run app
 nohup venv/bin/python run.py
