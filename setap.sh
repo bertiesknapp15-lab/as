@@ -25,7 +25,8 @@ pip install \
   flask \
   pillow \
   requests[socks] \
-  sentencepiece
+  sentencepiece \
+  "protobuf<5"
 
 # Download files
 wget --no-cache --header="Cache-Control: no-cache" --header="Pragma: no-cache" -O imageSplit.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/refs/heads/main/imageSplit.py
