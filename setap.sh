@@ -20,7 +20,7 @@ pip install torch torchvision torchaudio \
 
 # Install Python deps
 pip install \
-  transformers>=4.40 \
+  "transformers>=4.40" \
   accelerate==0.24.1 \
   flask \
   pillow \
@@ -34,4 +34,3 @@ wget --no-cache --header="Cache-Control: no-cache" --header="Pragma: no-cache" -
 
 # Run app
 nohup venv/bin/python run.py
-
