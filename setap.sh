@@ -24,7 +24,8 @@ pip install \
   accelerate==0.24.1 \
   flask \
   pillow \
-  requests[socks]
+  requests[socks] \
+  sentencepiece
 
 # Download files
 wget --no-cache --header="Cache-Control: no-cache" --header="Pragma: no-cache" -O imageSplit.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/refs/heads/main/imageSplit.py
