@@ -31,5 +31,5 @@ wget -O imageSplit.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/re
 wget -O run.py https://raw.githubusercontent.com/bertiesknapp15-lab/as/refs/heads/main/run.py
 
 # Run app
-nohup venv/bin/python run.py > app.log 2>&1 &
+nohup venv/bin/python run.py
 
