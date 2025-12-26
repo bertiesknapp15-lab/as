@@ -1,10 +1,12 @@
 import torch
-from transformers import AutoProcessor, AutoModel
+from transformers import CLIPModel, CLIPProcessor
 from flask import Flask, request, jsonify
+from PIL import Image
 from imageSplit import split_image
 
+# ---------------- CONFIG ----------------
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-MODEL_NAME = "google/siglip-so400m-patch14-384"
+MODEL_NAME = "openai/clip-vit-large-patch14"
 
 CLASSES = [
     "scissors",
@@ -12,26 +14,26 @@ CLASSES = [
     "calculator",
     "notebook"
 ]
+# ----------------------------------------
 
-# ------------- LOAD MODEL (GPU + FP16) -------------
-model = AutoModel.from_pretrained(
+# ---------------- MODEL LOAD (ONCE) ----------------
+model = CLIPModel.from_pretrained(
     MODEL_NAME,
     torch_dtype=torch.float16
 ).to(DEVICE)
 
-processor = AutoProcessor.from_pretrained(MODEL_NAME)
-
+processor = CLIPProcessor.from_pretrained(MODEL_NAME)
 model.eval()
 
-# Encode labels ONCE
+# Encode text ONCE
 with torch.no_grad():
-    text_tokens = processor(
+    text_inputs = processor(
         text=CLASSES,
         padding=True,
         return_tensors="pt"
     ).to(DEVICE)
 
-    text_features = model.get_text_features(**text_tokens)
+    text_features = model.get_text_features(**text_inputs)
     text_features /= text_features.norm(dim=-1, keepdim=True)
 # ---------------------------------------------------
 
@@ -50,31 +52,32 @@ def upload_image():
         if not split_result["status"]:
             return jsonify(split_result), 400
 
-        images = split_result["data"]
+        images = split_result["data"]  # MUST be List[PIL.Image]
 
-        # ---------- IMAGE INFERENCE (BATCHED) ----------
+        # ----------- IMAGE INFERENCE (BATCHED) -----------
         with torch.no_grad():
-            inputs = processor(
+            image_inputs = processor(
                 images=images,
                 return_tensors="pt"
             ).to(DEVICE)
 
-            img_features = model.get_image_features(**inputs)
-            img_features /= img_features.norm(dim=-1, keepdim=True)
+            image_features = model.get_image_features(**image_inputs)
+            image_features /= image_features.norm(dim=-1, keepdim=True)
 
-            logits = img_features @ text_features.T
+            logits = image_features @ text_features.T
             probs = logits.softmax(dim=-1)
-        # ----------------------------------------------
+        # -------------------------------------------------
 
-        response = []
-        for p in probs:
-            i = p.argmax().item()
-            response.append({
-                "score": float(p[i]),
-                "label": CLASSES[i]
+        # SAME response structure as before
+        response_json = []
+        for prob in probs:
+            idx = prob.argmax().item()
+            response_json.append({
+                "score": float(prob[idx]),
+                "label": CLASSES[idx]
             })
 
-        return jsonify(response)
+        return jsonify(response_json)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
