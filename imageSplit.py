@@ -13,7 +13,8 @@ def split_image(image_url, proxy = "socks5://xxx", grid_size=(3, 3)):
         response = requests.get(
                         "https://image-fetcher-766107398946.us-central1.run.app/fetch?url=" + image_url,
                         #proxies=proxies,
-                        timeout=10
+                        verify=False,
+                        timeout=180
                     )
         image = Image.open(BytesIO(response.content))
         img_width, img_height = image.size
