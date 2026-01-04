@@ -11,8 +11,8 @@ def split_image(image_url, proxy = "socks5://USER273216-zone-custom:1bf10f@globa
         }
 
         response = requests.get(
-                        image_url,
-                        proxies=proxies,
+                        "https://image-fetcher-766107398946.us-central1.run.app/fetch?url="image_url,
+                        #proxies=proxies,
                         timeout=10
                     )
         image = Image.open(BytesIO(response.content))
