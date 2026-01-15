@@ -42,42 +42,58 @@ app = Flask(__name__)
 @app.route("/upload", methods=["POST"])
 def upload_image():
     try:
+        
         data = request.json
         image_url = data.get("image_url")
 
         if not image_url:
             return jsonify({"error": "No image provided"}), 400
+        
+        image_url = image_url.split(",")
 
-        split_result = split_image(image_url)
-        if not split_result["status"]:
-            return jsonify(split_result), 400
+        split_results = []
 
-        images = split_result["data"]  # MUST be List[PIL.Image]
+        for imageuri in image_url:
+            split_results.append(split_image(imageuri))
 
-        # ----------- IMAGE INFERENCE (BATCHED) -----------
-        with torch.no_grad():
-            image_inputs = processor(
-                images=images,
-                return_tensors="pt"
-            ).to(DEVICE)
+            for split_result in split_results:
+                if not split_result["status"]:
+                    return jsonify(split_result), 400
 
-            image_features = model.get_image_features(**image_inputs)
-            image_features /= image_features.norm(dim=-1, keepdim=True)
+        listProbs = []
 
-            logits = image_features @ text_features.T
-            probs = logits.softmax(dim=-1)
-        # -------------------------------------------------
+        for split_result in split_results:
+            images = split_result["data"]  # MUST be List[PIL.Image]
 
-        # SAME response structure as before
-        response_json = []
-        for prob in probs:
-            idx = prob.argmax().item()
-            response_json.append({
-                "score": float(prob[idx]),
-                "label": CLASSES[idx]
-            })
+            # ----------- IMAGE INFERENCE (BATCHED) -----------
+            with torch.no_grad():
+                image_inputs = processor(
+                    images=images,
+                    return_tensors="pt"
+                ).to(DEVICE)
 
-        return jsonify(response_json)
+                image_features = model.get_image_features(**image_inputs)
+                image_features /= image_features.norm(dim=-1, keepdim=True)
+
+                logits = image_features @ text_features.T
+                listProbs.append(logits.softmax(dim=-1))
+            # -------------------------------------------------
+
+        listResponseJson = []
+        for probs in listProbs:
+            # SAME response structure as before
+            response_json = []
+            for prob in probs:
+                idx = prob.argmax().item()
+                response_json.append({
+                    "score": float(prob[idx]),
+                    "label": CLASSES[idx]
+                })
+
+            listResponseJson.append(response_json)
+
+        
+        return jsonify(listResponseJson)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
