@@ -2,7 +2,7 @@ from PIL import Image
 import requests
 from io import BytesIO
 
-def split_image(image_url, proxy = "socks5://xxx", grid_size=(3, 3)):
+def split_image(image_url, proxy = "socks5://USER273216-zone-custom:1bf10f@global.unl.711proxy.com:12000", grid_size=(3, 3)):
     try:
 
         proxies = {
@@ -12,7 +12,7 @@ def split_image(image_url, proxy = "socks5://xxx", grid_size=(3, 3)):
 
         response = requests.get(
                         image_url,
-                        #proxies=proxies,
+                        proxies=proxies,
                         verify=False,
                         timeout=180
                     )
